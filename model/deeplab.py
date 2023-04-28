@@ -202,10 +202,9 @@ class ResNet(nn.Module):
         x = self.layer3(x)
 
         x4 = self.layer4(x)
-        feature = x
+        feature = x # torch.Size([3, 1024, 15, 15])
         #print(feature.shape)
-        x5 = self.layer5(x4)
-
+        x5 = self.layer5(x4) # torch.Size([3, 9, 15, 15])
         return None, feature, x5
 
     def get_1x_lr_params_NOscale(self):

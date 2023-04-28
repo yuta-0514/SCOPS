@@ -154,7 +154,7 @@ def Batch_Draw_Landmarks(imgs, pred, sm=True):
 
 
             img = imgs_cv2[b].copy()
-            cv2.drawMarker(img, (x_c,y_c), (int(cmap[c][0]), int(cmap[c][1]), int(cmap[c][2])), markerType=cv2.MARKER_CROSS, markerSize = 10, thickness=2)
+            cv2.drawMarker(img, (int(x_c.item()),int(y_c.item())), (int(cmap[c][0]), int(cmap[c][1]), int(cmap[c][2])), markerType=cv2.MARKER_CROSS, markerSize = 10, thickness=2)
             imgs_cv2[b] = img
 
     return imgs_cv2.transpose(0,3,1,2), centers, part_response.transpose(0,1,4,2,3), part_response_gradient.transpose(0,1,4,2,3)
