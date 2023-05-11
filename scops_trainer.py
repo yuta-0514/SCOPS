@@ -214,5 +214,3 @@ class SCOPSTrainer(object):
                       loss_lmeqv_value,
                       loss_sc_value,
                       loss_orthonamal_value))
-        import pdb
-        pdb.set_trace()
