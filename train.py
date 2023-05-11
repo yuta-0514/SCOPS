@@ -26,6 +26,8 @@ import scops_trainer
 from dataset.dataset_factory import dataset_generator
 from model.model_factory import model_generator
 
+from face_umb import get_dataloader
+
 
 # solve potential deadlock https://github.com/pytorch/pytorch/issues/1355
 cv2.setNumThreads(0)
@@ -235,13 +237,16 @@ def main():
     # Initialize SCOPS trainer
     trainer = scops_trainer.SCOPSTrainer(args, model)
 
-    train_dataset = dataset_generator(args)
-    trainloader = data.DataLoader(train_dataset,
-                                  batch_size=args.batch_size,
-                                  shuffle=True,
-                                  num_workers=args.num_workers,
-                                  pin_memory=True,
-                                  drop_last=True)
+    # train_dataset = dataset_generator(args)
+    # trainloader = data.DataLoader(train_dataset,
+    #                               batch_size=args.batch_size,
+    #                               shuffle=True,
+    #                               num_workers=args.num_workers,
+    #                               pin_memory=True,
+    #                               drop_last=True)
+    trainloader = get_dataloader(
+        "/mnt/umd_face", 0, 3, False, 2048, 2
+    )
     trainloader_iter = enumerate(trainloader)
 
 

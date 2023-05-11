@@ -113,13 +113,7 @@ class SCOPSTrainer(object):
         self.optimizer_sc.zero_grad()
         adjust_learning_rate(self.optimizer_seg, current_step, self.args)
 
-        images_cpu = batch['img']
-        labels = batch['saliency'] if 'saliency' in batch.keys() else None
-        edges = batch['edge'] if 'edge' in batch.keys() else None
-        gts = batch['gt'] if 'gt' in batch.keys() else None
-
-        landmarks = batch['landmarks'] if 'landmarks' in batch.keys() else None
-        bbox = batch['bbox'] if 'bbox' in batch.keys() else None
+        images_cpu = batch[0]
 
         images = images_cpu.cuda(self.args.gpu)
         feature_instance, feature_part, pred_low = self.model(images)
@@ -128,7 +122,7 @@ class SCOPSTrainer(object):
         # prepare for torch model_zoo models images
         zoo_mean = np.array([0.485, 0.456, 0.406]).reshape((1, 3, 1, 1))
         zoo_var = np.array([0.229, 0.224, 0.225]).reshape((1, 3, 1, 1))
-        images_zoo_cpu = (images_cpu.numpy() +
+        images_zoo_cpu = (images_cpu.cpu().numpy() +
                           IMG_MEAN.reshape((1, 3, 1, 1))) / 255.0
         images_zoo_cpu -= zoo_mean
         images_zoo_cpu /= zoo_var
@@ -141,11 +135,6 @@ class SCOPSTrainer(object):
             zoo_feats = self.zoo_feat_net(images_zoo)
             zoo_feat = torch.cat([self.interp(zoo_feat)
                                   for zoo_feat in zoo_feats], dim=1)
-            # saliency masking
-            if not self.args.no_sal_masking and labels is not None:
-                zoo_feat = zoo_feat * \
-                    labels.unsqueeze(dim=1).expand_as(
-                        zoo_feat).cuda(self.args.gpu)
 
         loss_sc = loss.semantic_consistency_loss(
             features=zoo_feat, pred=pred, basis=self.part_basis_generator())
@@ -162,7 +151,7 @@ class SCOPSTrainer(object):
 
         # Equivariance Loss
         images_cj = torch.from_numpy(
-            ((images_cpu.numpy() + IMG_MEAN.reshape((1, 3, 1, 1))) / 255.0).clip(0, 1.0))
+            ((images_cpu.cpu().numpy() + IMG_MEAN.reshape((1, 3, 1, 1))) / 255.0).clip(0, 1.0))
         for b in range(images_cj.shape[0]):
             images_cj[b] = torch.from_numpy(self.cj_transform(
                 images_cj[b]).numpy() * 255.0 - IMG_MEAN.reshape((1, 3, 1, 1)))
@@ -189,34 +178,7 @@ class SCOPSTrainer(object):
 
         loss_lmeqv = F.mse_loss(centers_tps, centers_tps_org)
         loss_lmeqv_value += self.args.lambda_lmeqv * loss_lmeqv.data.cpu().numpy()
-
-        # visualization
-
-        if current_step % self.args.vis_interval == 0:
-            with torch.no_grad():
-                pred_softmax = nn.Softmax(dim=1)(pred)
-                part_softmax = pred_softmax[:, 1:, :, :]
-                # normalize
-                part_softmax /= part_softmax.max(dim=3, keepdim=True)[
-                    0].max(dim=2, keepdim=True)[0]
-                self.viz.vis_images(current_step, images_cpu, images_tps.cpu(
-                ), labels, edges, IMG_MEAN, pred.float())
-                self.viz.vis_part_heatmaps(
-                    current_step, part_softmax, threshold=0.1, prefix='pred')
-
-                if landmarks is not None:
-                    self.viz.vis_landmarks(current_step, images_cpu,
-                                           IMG_MEAN, pred, landmarks)
-                if bbox is not None:
-                    self.viz.vis_bboxes(current_step, bbox)
-
-                print('saving part basis')
-                torch.save({'W': self.part_basis_generator().detach().cpu(), 'W_state_dict': self.part_basis_generator.state_dict()},
-                           osp.join(self.args.snapshot_dir, self.args.exp_name, 'BASIS_' + str(current_step) + '.pth'))
-
-            self.viz.vis_losses(current_step, [self.part_basis_generator.w.mean(), self.part_basis_generator.w.std()], [
-                'part_basis_mean', 'part_basis_std'])
-
+        
         # sum all loss terms
         total_loss = self.args.lambda_con * loss_con \
             + self.args.lambda_eqv * loss_eqv \
@@ -252,3 +214,5 @@ class SCOPSTrainer(object):
                       loss_lmeqv_value,
                       loss_sc_value,
                       loss_orthonamal_value))
+        import pdb
+        pdb.set_trace()
