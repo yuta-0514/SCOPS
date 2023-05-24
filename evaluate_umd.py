@@ -2,6 +2,7 @@
 Copyright (C) 2019 NVIDIA Corporation.  All rights reserved.
 Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 """
+# python3 evaluate_umd.py --crf --save-viz --save-dir results_CelebA/SCOPS_K8/ITER_100000/test
 
 import argparse
 import scipy
@@ -35,7 +36,7 @@ DATASET = 'CelebAWild'
 DATA_DIRECTORY = '/mnt/CelebA'
 DATA_LIST_PATH = '/mnt/CelebA/MAFL/testing.txt'
 NUM_PARTS = 3
-RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_origin/model_200000.pth'
+RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_retrain/model_200000.pth'
 SAVE_DIRECTORY = 'results'
 INPUT_SIZE='112,112'
 # python3 evaluate_celebAWild.py --crf --save-viz --save-dir results_CelebA/SCOPS_K8/ITER_100000/test/
@@ -119,15 +120,14 @@ def main():
     model.eval()
     model.cuda(gpu0)
 
-    if args.dataset == 'CelebAWild':
-        from dataset.celeba_wild_dataset import CelebAWildDataset
-        dataset = CelebAWildDataset
-        testloader = data.DataLoader(dataset(args.data_dir, args.data_list, crop_size=input_size,
-		                scale=False, mirror=False, mean=IMG_MEAN,
-		                center_crop=False, ignore_saliency_fg=False, iou_threshold=0.3),
-		                batch_size=1, shuffle=False, pin_memory=True)
-    else:
-        print('Not supported dataset {}'.format(args.dataset))
+    from torchvision import transforms
+    from torchvision.datasets import ImageFolder
+    transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+            ])
+    dataset = ImageFolder("/mnt/umd_face", transform)
+    testloader = data.DataLoader(dataset=dataset, batch_size=1, shuffle=False, pin_memory=True)
 
 
     interp = nn.Upsample(size=input_size, mode='bilinear', align_corners=True)
@@ -143,11 +143,12 @@ def main():
             if index % 100 == 0:
                 path_split = args.save_dir.split('/')
                 print('{} processd: {}/{}'.format(index, path_split[-4], path_split[-3]))
-            image = batch['img']
-            label = batch['saliency']
-            size_org  = batch['size']
-            name  = batch['name']
-            landmarks_gt[index,:,:] = batch['landmarks']
+            # image = batch['img']
+            # label = batch['saliency']
+            # size_org  = batch['size']
+            # name  = batch['name']
+            # landmarks_gt[index,:,:] = batch['landmarks']
+            image = batch[0]
 
             size = input_size
             output = model(image.cuda(gpu0))
@@ -170,7 +171,7 @@ def main():
                 output = output.cpu().data[0].numpy()
 
                 output = output[:,:size[0],:size[1]]
-                gt = np.asarray(label[0].numpy()[:size[0],:size[1]], dtype=np.int)
+                # gt = np.asarray(label[0].numpy()[:size[0],:size[1]], dtype=np.int)
 
                 output_np = output.transpose(1,2,0)
                 output_np = np.asarray(np.argmax(output_np, axis=2), dtype=np.int)
