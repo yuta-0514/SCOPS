@@ -30,14 +30,15 @@ import matplotlib.pyplot as plt
 
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 
-MODEL = ''
-DATASET = ''
-DATA_DIRECTORY = ''
-DATA_LIST_PATH = ''
-NUM_PARTS = 8
-RESTORE_FROM = ''
+MODEL = 'DeepLab50'
+DATASET = 'CelebAWild'
+DATA_DIRECTORY = '/mnt/CelebA'
+DATA_LIST_PATH = '/mnt/CelebA/MAFL/testing.txt'
+NUM_PARTS = 3
+RESTORE_FROM = 'model_200000.pth'
 SAVE_DIRECTORY = 'results'
-INPUT_SIZE='256,256'
+INPUT_SIZE='112,112'
+# python3 evaluate_celebAWild.py --crf --save-viz --save-dir results_CelebA/SCOPS_K8/ITER_100000/test/
 
 
 def get_arguments():
