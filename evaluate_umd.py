@@ -39,7 +39,7 @@ NUM_PARTS = 3
 RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_retrain/model_200000.pth'
 SAVE_DIRECTORY = 'results_CelebA/SCOPS_K8/ITER_200000/test/'
 INPUT_SIZE='112,112'
-# python3 evaluate_celebAWild.py --crf --save-viz --save-dir results_CelebA/SCOPS_K8/ITER_100000/test/
+# python3 evaluate_umd.py --crf --save-viz
 
 
 def get_arguments():
@@ -156,7 +156,7 @@ def main():
                 mean_tensor = torch.tensor(IMG_MEAN).float().expand(int(size[1]), int(size[0]), 3).transpose(0,2)
                 imgs_viz = torch.clamp(image+mean_tensor, 0.0, 255.0)
                 #landmark visualization
-                lms_viz = Batch_Draw_GT_Landmarks(imgs_viz, output, lms)
+                # lms_viz = Batch_Draw_GT_Landmarks(imgs_viz, output, lms)
 
                 output = softmax(output)
                 # normalize part
@@ -170,20 +170,20 @@ def main():
                 output_np = output.transpose(1,2,0)
                 output_np = np.asarray(np.argmax(output_np, axis=2), dtype=np.int)
 
-                filename = os.path.join(save_seg_dir, '{}.png'.format(index))
-                file_dir = os.path.dirname(filename)
-                if not os.path.exists(file_dir):
-                    os.makedirs(file_dir)
+                # filename = os.path.join(save_seg_dir, '{}.png'.format(index))
+                # file_dir = os.path.dirname(filename)
+                # if not os.path.exists(file_dir):
+                #     os.makedirs(file_dir)
 
-                Image.fromarray(output_np, 'P').save(filename)
+                # Image.fromarray(output_np, 'P').save(filename)
 
                 seg_viz = colorize(output_np)
-                filename = os.path.join(save_part_dir, '{}.png'.format(index))
-                file_dir = os.path.dirname(filename)
-                if not os.path.exists(file_dir):
-                    os.makedirs(file_dir)
+                # filename = os.path.join(save_part_dir, '{}.png'.format(index))
+                # file_dir = os.path.dirname(filename)
+                # if not os.path.exists(file_dir):
+                #     os.makedirs(file_dir)
 
-                Image.fromarray(seg_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
+                # Image.fromarray(seg_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
                 seg_overlay_viz = (imgs_viz.numpy()*0.8+ seg_viz*0.7).clip(0,255.0).astype(np.uint8)
                 filename = os.path.join(save_overlay_dir, '{}.png'.format(index))
@@ -193,33 +193,33 @@ def main():
 
                 Image.fromarray(seg_overlay_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
-                if args.crf:
-                    output_dcrf = utils.denseCRF(imgs_viz.numpy().squeeze().transpose(1,2,0).astype(np.uint8).copy(), output)
-                    output_dcrf = np.asarray(np.argmax(output_dcrf, axis=2), dtype=np.int)
-                    seg_dcrf_viz = colorize(output_dcrf)
+    #             if args.crf:
+    #                 output_dcrf = utils.denseCRF(imgs_viz.numpy().squeeze().transpose(1,2,0).astype(np.uint8).copy(), output)
+    #                 output_dcrf = np.asarray(np.argmax(output_dcrf, axis=2), dtype=np.int)
+    #                 seg_dcrf_viz = colorize(output_dcrf)
 
-                    filename = os.path.join(save_part_dcrf_dir, '{}.png'.format(index))
-                    file_dir = os.path.dirname(filename)
-                    if not os.path.exists(file_dir):
-                        os.makedirs(file_dir)
-                    Image.fromarray(seg_dcrf_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
+    #                 filename = os.path.join(save_part_dcrf_dir, '{}.png'.format(index))
+    #                 file_dir = os.path.dirname(filename)
+    #                 if not os.path.exists(file_dir):
+    #                     os.makedirs(file_dir)
+    #                 Image.fromarray(seg_dcrf_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
-                    seg_dcrf_overlay_viz = (imgs_viz.numpy()*0.8+ seg_dcrf_viz*0.7).clip(0,255.0).astype(np.uint8)
-                    filename = os.path.join(save_dcrf_overlay_dir, '{}.png'.format(index))
-                    file_dir = os.path.dirname(filename)
-                    if not os.path.exists(file_dir):
-                        os.makedirs(file_dir)
-                    Image.fromarray(seg_dcrf_overlay_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
+    #                 seg_dcrf_overlay_viz = (imgs_viz.numpy()*0.8+ seg_dcrf_viz*0.7).clip(0,255.0).astype(np.uint8)
+    #                 filename = os.path.join(save_dcrf_overlay_dir, '{}.png'.format(index))
+    #                 file_dir = os.path.dirname(filename)
+    #                 if not os.path.exists(file_dir):
+    #                     os.makedirs(file_dir)
+    #                 Image.fromarray(seg_dcrf_overlay_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
 
-                filename_lm = os.path.join(save_lm_dir, '{}.png'.format(index))
-                file_dir = os.path.dirname(filename_lm)
-                if not os.path.exists(file_dir):
-                    os.makedirs(file_dir)
-                Image.fromarray(lms_viz[0,:,:,:].transpose(1, 2, 0), 'RGB').save(filename_lm)
+    #             filename_lm = os.path.join(save_lm_dir, '{}.png'.format(index))
+    #             file_dir = os.path.dirname(filename_lm)
+    #             if not os.path.exists(file_dir):
+    #                 os.makedirs(file_dir)
+    #             Image.fromarray(lms_viz[0,:,:,:].transpose(1, 2, 0), 'RGB').save(filename_lm)
 
-    np.save(os.path.join(args.save_dir, 'pred_kp.npy'), landmarks)
-    np.save(os.path.join(args.save_dir, 'gt_kp.npy'), landmarks_gt)
+    # np.save(os.path.join(args.save_dir, 'pred_kp.npy'), landmarks)
+    # np.save(os.path.join(args.save_dir, 'gt_kp.npy'), landmarks_gt)
 
 
 if __name__ == '__main__':
