@@ -37,7 +37,7 @@ DATA_DIRECTORY = '/mnt/CelebA'
 DATA_LIST_PATH = '/mnt/CelebA/MAFL/testing.txt'
 NUM_PARTS = 3
 RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_retrain/model_200000.pth'
-SAVE_DIRECTORY = 'results'
+SAVE_DIRECTORY = 'results_CelebA/SCOPS_K8/ITER_200000/test/'
 INPUT_SIZE='112,112'
 # python3 evaluate_celebAWild.py --crf --save-viz --save-dir results_CelebA/SCOPS_K8/ITER_100000/test/
 
@@ -143,11 +143,6 @@ def main():
             if index % 100 == 0:
                 path_split = args.save_dir.split('/')
                 print('{} processd: {}/{}'.format(index, path_split[-4], path_split[-3]))
-            # image = batch['img']
-            # label = batch['saliency']
-            # size_org  = batch['size']
-            # name  = batch['name']
-            # landmarks_gt[index,:,:] = batch['landmarks']
             image = batch[0]
 
             size = input_size
@@ -171,12 +166,11 @@ def main():
                 output = output.cpu().data[0].numpy()
 
                 output = output[:,:size[0],:size[1]]
-                # gt = np.asarray(label[0].numpy()[:size[0],:size[1]], dtype=np.int)
 
                 output_np = output.transpose(1,2,0)
                 output_np = np.asarray(np.argmax(output_np, axis=2), dtype=np.int)
 
-                filename = os.path.join(save_seg_dir, '{}.png'.format(name[0][:-4]))
+                filename = os.path.join(save_seg_dir, '{}.png'.format(index))
                 file_dir = os.path.dirname(filename)
                 if not os.path.exists(file_dir):
                     os.makedirs(file_dir)
@@ -184,7 +178,7 @@ def main():
                 Image.fromarray(output_np, 'P').save(filename)
 
                 seg_viz = colorize(output_np)
-                filename = os.path.join(save_part_dir, '{}.png'.format(name[0][:-4]))
+                filename = os.path.join(save_part_dir, '{}.png'.format(index))
                 file_dir = os.path.dirname(filename)
                 if not os.path.exists(file_dir):
                     os.makedirs(file_dir)
@@ -192,7 +186,7 @@ def main():
                 Image.fromarray(seg_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
                 seg_overlay_viz = (imgs_viz.numpy()*0.8+ seg_viz*0.7).clip(0,255.0).astype(np.uint8)
-                filename = os.path.join(save_overlay_dir, '{}.png'.format(name[0][:-4]))
+                filename = os.path.join(save_overlay_dir, '{}.png'.format(index))
                 file_dir = os.path.dirname(filename)
                 if not os.path.exists(file_dir):
                     os.makedirs(file_dir)
@@ -204,21 +198,21 @@ def main():
                     output_dcrf = np.asarray(np.argmax(output_dcrf, axis=2), dtype=np.int)
                     seg_dcrf_viz = colorize(output_dcrf)
 
-                    filename = os.path.join(save_part_dcrf_dir, '{}.png'.format(name[0][:-4]))
+                    filename = os.path.join(save_part_dcrf_dir, '{}.png'.format(index))
                     file_dir = os.path.dirname(filename)
                     if not os.path.exists(file_dir):
                         os.makedirs(file_dir)
                     Image.fromarray(seg_dcrf_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
                     seg_dcrf_overlay_viz = (imgs_viz.numpy()*0.8+ seg_dcrf_viz*0.7).clip(0,255.0).astype(np.uint8)
-                    filename = os.path.join(save_dcrf_overlay_dir, '{}.png'.format(name[0][:-4]))
+                    filename = os.path.join(save_dcrf_overlay_dir, '{}.png'.format(index))
                     file_dir = os.path.dirname(filename)
                     if not os.path.exists(file_dir):
                         os.makedirs(file_dir)
                     Image.fromarray(seg_dcrf_overlay_viz.squeeze().transpose(1, 2, 0), 'RGB').save(filename)
 
 
-                filename_lm = os.path.join(save_lm_dir, '{}.png'.format(name[0][:-4]))
+                filename_lm = os.path.join(save_lm_dir, '{}.png'.format(index))
                 file_dir = os.path.dirname(filename_lm)
                 if not os.path.exists(file_dir):
                     os.makedirs(file_dir)
