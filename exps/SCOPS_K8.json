@@ -16,7 +16,7 @@
     "random_mirror": false,
     "random_scale": false,
     "random_seed": 1234,
-    "num_steps": 400000,
+    "num_steps": 200000,
     "batch_size": 3,
     "learning_rate": 1e-05,
     "power": 0.9,
