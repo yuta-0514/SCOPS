@@ -252,3 +252,12 @@ class SCOPSTrainer(object):
                       loss_lmeqv_value,
                       loss_sc_value,
                       loss_orthonamal_value))
+        
+        f = open('log_loss.txt', 'a')
+        f.write('iter = {:8d}/{:8d}\n'.format(current_step, self.args.num_steps))
+        f.write('loss_con = {:.3f}\n'.format(loss_con_value))
+        f.write('loss_eqv = {:.3f}\n'.format(loss_eqv_value))
+        f.write('loss_lmeqv = {:.3f}\n'.format(loss_lmeqv_value))
+        f.write('loss_sc = {:.3f}\n'.format(loss_sc_value))
+        f.write('loss_orthonamal = {:.3f}\n'.format(loss_orthonamal_value))
+        f.close()
