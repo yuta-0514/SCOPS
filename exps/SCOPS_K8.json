@@ -1,5 +1,5 @@
 {
-    "exp_name": "SCOPS_K8_400000",
+    "exp_name": "SCOPS_K8_retrain",
     "num_parts": 3,
     "learning_rate_w": 0.01,
     "ref_net": "vgg19",
@@ -26,7 +26,7 @@
     "lambda_con": 1e-1,
     "lambda_eqv": 1e1,
     "lambda_lmeqv": 1e1,
-    "lambda_sc": 1e3,
+    "lambda_sc": 1e2,
     "lambda_orthonormal": 1e-1,
     "no_sal_masking":false,
     "tps_mode": "affine",
