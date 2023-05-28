@@ -1,5 +1,5 @@
 {
-    "exp_name": "SCOPS_K8_origin",
+    "exp_name": "SCOPS_K8_CelebA",
     "num_parts": 3,
     "learning_rate_w": 0.01,
     "ref_net": "vgg19",
@@ -9,7 +9,7 @@
     "num_workers": 8,
     "dataset": "CelebAWild",
     "celeba_th": 0.3,
-    "data_dir": "/mnt/CelebA",
+    "data_dir": "/mnt/CelebA_scale",
     "data_list": "/mnt/CelebA/MAFL/celebA_training.txt",
     "tb_dir": "tb_logs",
     "input_size": "112,112",
