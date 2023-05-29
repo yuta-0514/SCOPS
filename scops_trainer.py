@@ -5,6 +5,7 @@ Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses
 
 import os.path as osp
 import numpy as np
+import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -114,6 +115,8 @@ class SCOPSTrainer(object):
         adjust_learning_rate(self.optimizer_seg, current_step, self.args)
 
         images_cpu = batch[0]
+        # labels = self.saliency_map(images_cpu)
+        labels = None
 
         images = images_cpu.cuda(self.args.gpu)
         feature_instance, feature_part, pred_low = self.model(images)
@@ -135,7 +138,12 @@ class SCOPSTrainer(object):
             zoo_feats = self.zoo_feat_net(images_zoo)
             zoo_feat = torch.cat([self.interp(zoo_feat)
                                   for zoo_feat in zoo_feats], dim=1)
-
+            # saliency masking
+            if not self.args.no_sal_masking and labels is not None:
+                zoo_feat = zoo_feat * \
+                    labels.unsqueeze(dim=1).expand_as(
+                        zoo_feat).cuda(self.args.gpu)
+                
         loss_sc = loss.semantic_consistency_loss(
             features=zoo_feat, pred=pred, basis=self.part_basis_generator())
         loss_sc_value += self.args.lambda_sc * loss_sc.data.cpu().numpy()
@@ -214,3 +222,17 @@ class SCOPSTrainer(object):
                       loss_lmeqv_value,
                       loss_sc_value,
                       loss_orthonamal_value))
+
+    def saliency_map(self, images):
+        labels = torch.empty((images.shape[0],images.shape[2],images.shape[3]))
+        saliency = cv2.saliency.StaticSaliencySpectralResidual_create()
+
+        for i, img in enumerate(images):
+            img = img.permute(1, 2, 0)
+            img = img.to('cpu').detach().numpy()
+            bool, map = saliency.computeSaliency(img)
+            i_saliency = (map * 255).astype("uint8")
+
+            i_threshold = cv2.threshold(i_saliency, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            labels[i] = torch.from_numpy(i_threshold.astype(np.float32)).clone()
+        return labels
