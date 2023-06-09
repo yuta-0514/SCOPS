@@ -45,7 +45,8 @@ def get_dataloader(
              transforms.ToTensor(),
              transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
              ])
-        train_set = ImageFolder(root_dir, transform)
+        # train_set = ImageFolder(root_dir, transform)
+        train_set = SCOPSDataset(root_dir, transform)
 
     # DALI
     if dali:
@@ -224,6 +225,37 @@ def dali_data_iter(
         pipe.set_outputs(images, labels)
     pipe.build()
     return DALIWarper(DALIClassificationIterator(pipelines=[pipe], reader_name=name, ))
+
+
+from PIL import Image
+class SCOPSDataset(Dataset):
+    def __init__(self, root_dir, transform):
+        super(SCOPSDataset, self).__init__()
+        file = os.path.join(root_dir, "umd_train.txt")
+        self.img_paths = []
+        labels = []
+        with open(file) as f :
+            for line in f:
+                l = line.replace("\n", "").split(", ")
+                self.img_paths.append(l[0])
+                labels.append(int(l[1]))
+        self.labels = torch.Tensor(labels)
+        self.transform = transform
+
+    def __getitem__(self, index):
+        path = os.path.join("/mnt/umd_face/", self.img_paths[index])
+        img = self.pil_loader(path)
+        self.img = self.transform(img)
+        self.label = self.labels[index]
+        return self.img, self.label
+
+    def __len__(self):
+        return len(self.labels)
+    
+    def pil_loader(self, path: str) -> Image.Image:
+        with open(path, "rb") as f:
+            img = Image.open(f)
+            return img.convert("RGB")
 
 
 @torch.no_grad()
