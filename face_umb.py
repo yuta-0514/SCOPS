@@ -228,6 +228,7 @@ def dali_data_iter(
 
 
 from PIL import Image
+import cv2
 class SCOPSDataset(Dataset):
     def __init__(self, root_dir, transform):
         super(SCOPSDataset, self).__init__()
@@ -243,11 +244,24 @@ class SCOPSDataset(Dataset):
         self.transform = transform
 
     def __getitem__(self, index):
+        transform_saliency = transforms.Compose([
+             transforms.ToTensor(),
+             ])
         path = os.path.join("/mnt/umd_face/", self.img_paths[index])
         img = self.pil_loader(path)
         self.img = self.transform(img)
         self.label = self.labels[index]
-        return self.img, self.label
+
+        saliency_path = path.replace("umd_face", "umd_face_saliency")
+        saliency_path = saliency_path.replace("jpg", "png")
+        if os.path.isfile(saliency_path):
+            saliency_map = cv2.imread(saliency_path, cv2.IMREAD_GRAYSCALE)     
+            saliency_map = saliency_map.astype(np.float32)
+            saliency_map /= 255.0
+            self.saliency_map = transform_saliency(saliency_map)
+        else:
+            self.saliency_map = self.create_saliency_map()
+        return self.img, self.label, self.saliency_map.squeeze()
 
     def __len__(self):
         return len(self.labels)
@@ -257,6 +271,18 @@ class SCOPSDataset(Dataset):
             img = Image.open(f)
             return img.convert("RGB")
 
+    def create_saliency_map(self):
+        saliency = cv2.saliency.StaticSaliencySpectralResidual_create()
+        img = self.img.permute(1, 2, 0)
+        img = img.to('cpu').detach().numpy()
+        _, map = saliency.computeSaliency(img)
+        i_saliency = (map * 255).astype("uint8")
+        i_saliency = ((i_saliency / 255) - 0.5) * 2 # 正規化
+        saliency_map = torch.from_numpy(i_saliency.astype(np.float32)).clone()
+        return saliency_map
+    # pip install opencv-python==3.4.6.27
+    # pip install opencv-contrib-python==3.4.2.16
+    # apt install libsm6 libxrender1 libxext-dev
 
 @torch.no_grad()
 class DALIWarper(object):

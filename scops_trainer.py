@@ -17,8 +17,6 @@ from torchvision import transforms
 from tps.rand_tps import RandTPS
 from visualize import Visualizer
 
-import pyimgsaliency as psal
-
 IMG_MEAN = np.array((104.00698793, 116.66876762,
                      122.67891434), dtype=np.float32)
 
@@ -117,7 +115,7 @@ class SCOPSTrainer(object):
         adjust_learning_rate(self.optimizer_seg, current_step, self.args)
 
         images_cpu = batch[0]
-        labels = self.saliency_map(images_cpu)
+        labels = batch[2]
 
         images = images_cpu.cuda(self.args.gpu)
         feature_instance, feature_part, pred_low = self.model(images)
@@ -223,23 +221,6 @@ class SCOPSTrainer(object):
                       loss_lmeqv_value,
                       loss_sc_value,
                       loss_orthonamal_value))
-
-    # def saliency_map(self, images):
-    #     labels = torch.empty((images.shape[0],images.shape[2],images.shape[3]))
-    #     saliency = cv2.saliency.StaticSaliencySpectralResidual_create() # こちらを採用
-    #     # saliency = cv2.saliency.StaticSaliencyFineGrained_create()
-
-    #     for i, img in enumerate(images):
-    #         img = img.permute(1, 2, 0)
-    #         img = img.to('cpu').detach().numpy()
-    #         bool, map = saliency.computeSaliency(img)
-    #         i_saliency = (map * 255).astype("uint8")
-    #         i_saliency = ((i_saliency / 255) - 0.5) * 2 # 正規化
-    #         labels[i] = torch.from_numpy(i_saliency.astype(np.float32)).clone()
-    #     return labels
-    # pip install opencv-python==3.4.6.27
-    # pip install opencv-contrib-python==3.4.2.16
-    # apt install libsm6 libxrender1 libxext-dev
 
     def saliency_map(self, images):
         labels = torch.empty((images.shape[0],images.shape[2],images.shape[3]))
