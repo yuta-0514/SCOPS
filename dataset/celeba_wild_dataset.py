@@ -55,8 +55,10 @@ class CelebAWildDataset(data.Dataset):
 
 
         for name in self.img_ids:
-            img_file = osp.join(self.root, "img_celeba/{}".format(name))
-            label_file = osp.join(self.root, "Saliency_Wild/{}.png".format(name[:-4]))
+            # img_file = osp.join(self.root, "img_celeba/{}".format(name))
+            # label_file = osp.join(self.root, "Saliency_Wild/{}.png".format(name[:-4]))
+            img_file = osp.join(self.root, "img_celeba_resize/{}".format(name))
+            label_file = osp.join(self.root, "img_celeba_resize_saliency/{}.png".format(name[:-4]))
             if iou_threshold > 0:
                 box = box_dict[name]
                 h,w = imsize_dict[name]
