@@ -12,7 +12,7 @@
     "data_dir": "/mnt/CelebA",
     "data_list": "/mnt/CelebA/MAFL/celebA_training.txt",
     "tb_dir": "tb_logs",
-    "input_size": "256,256",
+    "input_size": "112,112",
     "random_mirror": false,
     "random_scale": false,
     "random_seed": 1234,

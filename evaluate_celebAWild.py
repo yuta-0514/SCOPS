@@ -32,12 +32,12 @@ IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 
 MODEL = 'DeepLab50'
 DATASET = 'CelebAWild'
-DATA_DIRECTORY = '/mnt/CelebA'
-DATA_LIST_PATH = '/mnt/CelebA/MAFL/testing.txt'
+DATA_DIRECTORY = "/mnt/UMD_Face"
+DATA_LIST_PATH = "/mnt/UMD_Face/umd_train.txt"
 NUM_PARTS = 3
 RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_CelebA/model_200000.pth'
 SAVE_DIRECTORY = 'results_CelebA/SCOPS_K8/ITER_100000/test/'
-INPUT_SIZE='112,112'
+INPUT_SIZE='256,256'
 # python3 evaluate_celebAWild.py --crf --save-viz
 
 
@@ -147,7 +147,6 @@ def main():
             label = batch['saliency']
             size_org  = batch['size']
             name  = batch['name']
-            landmarks_gt[index,:,:] = batch['landmarks']
 
             size = input_size
             output = model(image.cuda(gpu0))

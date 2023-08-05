@@ -40,38 +40,15 @@ class CelebAWildDataset(data.Dataset):
         if not max_iters==None:
             self.img_ids = self.img_ids * int(np.ceil(float(max_iters) / len(self.img_ids)))
         self.files = []
-        # landmarks
-
-        l = [l.split() for l in open(osp.join(self.root, 'list_landmarks_celeba.txt')) if len(l.split())==11]
-        lm_dict = {x[0]:[(int(x[1]), int(x[2])), (int(x[3]), int(x[4])),(int(x[5]), int(x[6])),(int(x[7]), int(x[8])),(int(x[9]), int(x[10]))] for x in l}
-
-        #box
-        b = [l.split() for l in open(osp.join(self.root, 'list_bbox_celeba.txt')) if len(l.split())==5 and l[:8] != 'image_id']
-        box_dict = {x[0]:[int(x[1]), int(x[2]), int(x[3]), int(x[4])] for x in b}
-
-        #im_sizez
-        s = [l.split() for l in open(osp.join(self.root, 'list_imsize_celeba.txt')) if len(l.split())==3 and l[:8] != 'image_id']
-        imsize_dict = {x[0]:[int(x[1]), int(x[2])] for x in s}
-
 
         for name in self.img_ids:
-            # img_file = osp.join(self.root, "img_celeba/{}".format(name))
-            # label_file = osp.join(self.root, "Saliency_Wild/{}.png".format(name[:-4]))
-            img_file = osp.join(self.root, "img_celeba_resize/{}".format(name))
-            label_file = osp.join(self.root, "img_celeba_resize_saliency/{}.png".format(name[:-4]))
-            if iou_threshold > 0:
-                box = box_dict[name]
-                h,w = imsize_dict[name]
-                if box[2]*box[3] < h*w*iou_threshold:
-                    continue
-            lms = lm_dict[name]
-
+            img_file = osp.join(self.root, "umd_face/{}".format(name))
+            label_file = osp.join(self.root, "umd_face_u2net/{}.png".format(name[:-4]))
 
             self.files.append({
                 "img": img_file,
                 "label": label_file,
                 "name": name,
-                "landmarks": lms
             })
         print('original {} filtered {}'.format(len(self.img_ids), len(self.files)))
 
@@ -125,17 +102,6 @@ class CelebAWildDataset(data.Dataset):
 
         image, label = self.generate_scale_imgs((image,label), (cv2.INTER_LINEAR,cv2.INTER_LINEAR))
 
-
-        # landmarks
-        landmarks = datafiles["landmarks"]
-        landmarks_scale = []
-
-        for kp_i in range(5):
-            lm = landmarks[kp_i]
-            landmarks_scale.append(torch.tensor((int(lm[0]*self.scale_x), int(lm[1]*self.scale_y))).unsqueeze(dim=0))
-
-        landmarks_scale = torch.cat(landmarks_scale, dim=0)
-
         image = np.asarray(image, np.float32)
         image -= self.mean
 
@@ -145,7 +111,6 @@ class CelebAWildDataset(data.Dataset):
         data_dict = {'img'     : image.copy(),
                      'saliency': label.copy() if label is not None else None,
                      'size'    : np.array(size),
-                     'landmarks': landmarks_scale,
                      'name'    : name}
 
         return data_dict

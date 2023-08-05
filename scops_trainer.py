@@ -115,11 +115,10 @@ class SCOPSTrainer(object):
 
         images_cpu = batch['img']
         labels = batch['saliency'] if 'saliency' in batch.keys() else None
-        edges = batch['edge'] if 'edge' in batch.keys() else None
-        gts = batch['gt'] if 'gt' in batch.keys() else None
+        edges = None
 
-        landmarks = batch['landmarks'] if 'landmarks' in batch.keys() else None
-        bbox = batch['bbox'] if 'bbox' in batch.keys() else None
+        landmarks = None
+        bbox = None
 
         images = images_cpu.cuda(self.args.gpu)
         feature_instance, feature_part, pred_low = self.model(images)
