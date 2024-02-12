@@ -35,7 +35,7 @@ DATASET = 'CelebAWild'
 DATA_DIRECTORY = "/mnt/UMD_Face"
 DATA_LIST_PATH = "/mnt/UMD_Face/umd_train.txt"
 NUM_PARTS = 3
-RESTORE_FROM = 'snapshots_CelebA/SCOPS_K8_CelebA/model_200000.pth'
+RESTORE_FROM = '/mnt/weight_scops/SCOPS_UMD_112/model_200000.pth'
 SAVE_DIRECTORY = 'results_CelebA/SCOPS_K8/ITER_100000/test/'
 INPUT_SIZE='112,112'
 # python3 evaluate_celebAWild.py --crf --save-viz

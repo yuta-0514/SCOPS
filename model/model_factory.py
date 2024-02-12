@@ -39,7 +39,8 @@ def model_generator(args):
     if args.restore_from != 'None':
         print('load model from {}'.format(args.restore_from))
         if args.restore_from[:4] == 'http':
-            saved_state_dict = model_zoo.load_url(args.restore_from)
+            # saved_state_dict = model_zoo.load_url(args.restore_from)
+            saved_state_dict = torch.load("./resnet50-caffe.pth")
         else:
             saved_state_dict = torch.load(args.restore_from)
 
